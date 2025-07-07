@@ -43,5 +43,16 @@
                 Padding="20 10"
                 BorderThickness="0"/>
         </ScrollViewer>
+
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Center"
+                    Grid.Row="3">
+            <Button x:Name="openCounter" Padding="20 10" Margin="20" Click="openCounter_Click">
+                Open Counter Connection
+            </Button>
+            <Button x:Name="incrementCounter" Padding="20 10" Margin="20" Click="incrementCounter_Click">
+                Increment Counter
+            </Button>
+        </StackPanel>
     </Grid>
 </Window>

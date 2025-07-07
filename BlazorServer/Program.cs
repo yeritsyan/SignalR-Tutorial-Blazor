@@ -33,5 +33,6 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.MapHub<ChatHub>("/chathub");
+app.MapHub<CounterHub>("/counterhub");
 
 app.Run();
