@@ -1,0 +1,78 @@
+@page "/chatroom"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.SignalR.Client
+@inject NavigationManager NavigationManager
+@implements IAsyncDisposable
+
+<PageTitle>Chatroom</PageTitle>
+
+<div class="container mt-4">
+    <div class="mb-3">
+        <label class="form-label">User:</label>
+        <input class="form-control" @bind="userInput" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Message:</label>
+        <input class="form-control" @bind="messageInput" />
+    </div>
+
+    <div class="mb-3">
+        <button class="btn btn-primary" @onclick="Send" disabled="@(!IsConnected)">Send</button>
+    </div>
+
+    <div>
+        Verbindung: @(IsConnected ? "Verbunden" : "Nicht verbunden")
+    </div>
+
+    <hr />
+
+    <ul class="list-group">
+        @foreach (var message in messages)
+        {
+            <li class="list-group-item">@message</li>
+        }
+    </ul>
+</div>
+
+@code{
+    private HubConnection? hubConnection;
+    private List<string> messages = new();
+    private string? userInput = "no data"; 
+    private string? messageInput = "no data"; 
+
+    public bool IsConnected => hubConnection?.State == HubConnectionState.Connected;
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+         .WithUrl(NavigationManager.ToAbsoluteUri("/chathub"))
+         .WithAutomaticReconnect()
+         .Build();
+
+        hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
+        {
+            var formattedMessage = $"{user}: {message}";
+            messages.Add(formattedMessage);
+            InvokeAsync(StateHasChanged);
+        });
+
+        await hubConnection.StartAsync();
+    }
+
+    private async Task Send()
+    {
+        if(hubConnection is not null)
+        {
+            await hubConnection.SendAsync("SendMessage", userInput, messageInput);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if(hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+}
